@@ -16,6 +16,15 @@ namespace Full_GRASP_And_SOLID
 
         public Product FinalProduct { get; set; }
 
+        // Se define propiedad boolena Cooked. Me indica si la receta ha sido completada o no
+        public bool Cooked { get; set; } = false;
+
+        //  Atributo del tipo TimerAdapter
+        private TimerAdapter timerClient;
+
+        // Creo el atributo que me va a guardar el timer
+        private CountdownTimer timer = new CountdownTimer();
+
         // Agregado por Creator
         public void AddStep(Product input, double quantity, Equipment equipment, int time)
         {
@@ -62,5 +71,50 @@ namespace Full_GRASP_And_SOLID
 
             return result;
         }
+
+        // Método que reotrna la suma del tiempo de cada uno de los pasos de una receta
+        public int GetCookTime()
+        {
+            int tiempoTotal = 0;
+            foreach (BaseStep step in this.steps)
+            {
+                
+                tiempoTotal += step.Time;
+            }
+
+            //Retorno el tiempo total de la receta
+            return tiempoTotal;
+        }
+
+        // Método StartCountdown para que comience el conteo
+        public void StartCountdown()
+        {
+            this.timerClient = new TimerAdapter(this);
+            this.timer.Register(this.GetCookTime(), this.timerClient);
+        }
+
+        // Método void Cook
+        public void Cook()
+        {
+            this.StartCountdown();
+        }
+
+        // Se hace uso del patrón ADAPTER
+        private class TimerAdapter : TimerClient
+        {
+            private Recipe Recipe;
+
+            public TimerAdapter(Recipe recipe)
+            {
+                this.Recipe = recipe;
+            }
+
+            public object TimeOutId { get; }
+            public void TimeOut()
+            {
+                this.Recipe.Cooked = true;
+            }
+        }
+
     }
 }
